@@ -18,18 +18,21 @@ public class PostController {
 
     private void initializePosts() {
         Post post1 = new Post();
+        post1.setId("1");
         post1.setTitle("Мой первый пост в блоге");
         post1.setContent("Сегодня я начал вести свой блог. Это очень волнительно! Буду делиться своими мыслями и идеями.");
         post1.setAuthor("Алексей");
         post1.setCreatedAt(LocalDateTime.of(2024, 1, 15, 10, 30));
 
         Post post2 = new Post();
+        post2.setId("2");
         post2.setTitle("Изучение Java");
         post2.setContent("Продолжаю изучать Java. Сегодня разбирался с коллекциями и потоками. Очень мощные инструменты!");
         post2.setAuthor("Мария");
         post2.setCreatedAt(LocalDateTime.of(2024, 1, 16, 14, 15));
 
         Post post3 = new Post();
+        post3.setId("3");
         post3.setTitle("Выходные планы");
         post3.setContent("На выходных планирую поход в горы. Надеюсь, погода не подведет и будет возможность сделать красивые фотографии.");
         post3.setAuthor("Дмитрий");
@@ -54,7 +57,7 @@ public class PostController {
     @GetMapping("/posts/{id}") // Вывод страницы
     public Optional<Post> show(@PathVariable String id) {
         var post = posts.stream()
-                .filter(p -> p.getTitle().equals(id))
+                .filter(p -> p.getId().equals(id))
                 .findFirst();
         return post;
     }
@@ -62,7 +65,7 @@ public class PostController {
     @PutMapping("/posts/{id}") // Обновление страницы
     public Post update(@PathVariable String id, @RequestBody Post data) {
         var maybePost = posts.stream()
-                .filter(p -> p.getTitle().equals(id))
+                .filter(p -> p.getId().equals(id))
                 .findFirst();
         if (maybePost.isPresent()) {
             var post = maybePost.get();
@@ -76,6 +79,6 @@ public class PostController {
 
     @DeleteMapping("/posts/{id}") // Удаление страницы
     public void destroy(@PathVariable String id) {
-        posts.removeIf(p -> p.getTitle().equals(id));
+        posts.removeIf(p -> p.getId().equals(id));
     }
 }
