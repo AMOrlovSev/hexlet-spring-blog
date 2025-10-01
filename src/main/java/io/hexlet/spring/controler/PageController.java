@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import io.hexlet.spring.util.Data;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,7 +22,7 @@ import io.hexlet.spring.model.Page;
 @SpringBootApplication
 @RestController
 public class PageController {
-    private List<Page> pages = new ArrayList<Page>();
+    private List<Page> pages = Data.getPages();
 
     @GetMapping("/pages")
     public ResponseEntity<List<Page>> index(@RequestParam(defaultValue = "10") Integer limit) {
