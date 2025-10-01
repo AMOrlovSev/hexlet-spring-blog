@@ -1,6 +1,8 @@
 package io.hexlet.spring.controler;
 
 import io.hexlet.spring.model.Post;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -44,41 +46,60 @@ public class PostController {
     }
 
     @GetMapping("/posts") // Список страниц
-    public List<Post> index(@RequestParam(defaultValue = "10") Integer limit) {
-        return posts.stream().limit(limit).toList();
+    public ResponseEntity<List<Post>> index(@RequestParam(defaultValue = "10") Integer limit) {
+        var result = posts.stream().limit(limit).toList();
+
+        return ResponseEntity.ok()
+                .body(result);
     }
 
     @PostMapping("/posts") // Создание страницы
-    public Post create(@RequestBody Post post) {
+    public ResponseEntity<Post> create(@RequestBody Post post) {
         posts.add(post);
-        return post;
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(post);
     }
 
-    @GetMapping("/posts/{id}") // Вывод страницы
-    public Optional<Post> show(@PathVariable String id) {
-        var post = posts.stream()
+    @GetMapping("/posts/{id}")
+    public ResponseEntity<Post> show(@PathVariable String id) {
+        Optional<Post> post = posts.stream()
                 .filter(p -> p.getId().equals(id))
                 .findFirst();
-        return post;
+
+        if (post.isPresent()) {
+            return ResponseEntity.ok(post.get());
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 
-    @PutMapping("/posts/{id}") // Обновление страницы
-    public Post update(@PathVariable String id, @RequestBody Post data) {
-        var maybePost = posts.stream()
+    @PutMapping("/posts/{id}")
+    public ResponseEntity<Post> update(@PathVariable String id, @RequestBody Post data) {
+        Optional<Post> maybePost = posts.stream()
                 .filter(p -> p.getId().equals(id))
                 .findFirst();
+
         if (maybePost.isPresent()) {
-            var post = maybePost.get();
+            Post post = maybePost.get();
             post.setTitle(data.getTitle());
             post.setContent(data.getContent());
             post.setAuthor(data.getAuthor());
             post.setCreatedAt(data.getCreatedAt());
+
+            return ResponseEntity.ok(post); // Возвращаем ОБНОВЛЕННЫЙ пост
+        } else {
+            return ResponseEntity.notFound().build(); // 404 если не найден
         }
-        return data;
     }
 
     @DeleteMapping("/posts/{id}") // Удаление страницы
-    public void destroy(@PathVariable String id) {
-        posts.removeIf(p -> p.getId().equals(id));
+    public ResponseEntity<Void> destroy(@PathVariable String id) {
+        boolean removed = posts.removeIf(p -> p.getId().equals(id));
+
+        if (removed) {
+            return ResponseEntity.noContent().build();  // 204 No Content
+        } else {
+            return ResponseEntity.notFound().build();   // 404 Not Found
+        }
     }
 }

@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -21,41 +23,55 @@ import io.hexlet.spring.model.Page;
 public class PageController {
     private List<Page> pages = new ArrayList<Page>();
 
-    @GetMapping("/pages") // Список страниц
-    public List<Page> index(@RequestParam(defaultValue = "10") Integer limit) {
-        return pages.stream().limit(limit).toList();
+    @GetMapping("/pages")
+    public ResponseEntity<List<Page>> index(@RequestParam(defaultValue = "10") Integer limit) {
+        var result = pages.stream().limit(limit).toList();
+
+        return ResponseEntity.ok()
+                .header("X-Total-Count", String.valueOf(pages.size()))
+                .body(result);
     }
 
-    @PostMapping("/pages") // Создание страницы
-    public Page create(@RequestBody Page page) {
+    @PostMapping("/pages")
+    public ResponseEntity<Page> create(@RequestBody Page page) {
         pages.add(page);
-        return page;
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(page);
     }
 
     @GetMapping("/pages/{id}") // Вывод страницы
-    public Optional<Page> show(@PathVariable String id) {
+    public ResponseEntity<Page> show(@PathVariable String id) {
         var page = pages.stream()
                 .filter(p -> p.getSlug().equals(id))
                 .findFirst();
-        return page;
+        return ResponseEntity.of(page);
     }
 
-    @PutMapping("/pages/{id}") // Обновление страницы
-    public Page update(@PathVariable String id, @RequestBody Page data) {
+    @PutMapping("/pages/{id}")
+    public ResponseEntity<Page> update(@PathVariable String id, @RequestBody Page data) {
         var maybePage = pages.stream()
                 .filter(p -> p.getSlug().equals(id))
                 .findFirst();
+
         if (maybePage.isPresent()) {
             var page = maybePage.get();
             page.setSlug(data.getSlug());
             page.setName(data.getName());
             page.setBody(data.getBody());
+            return ResponseEntity.ok(page); // Возвращаем обновленную страницу
+        } else {
+            return ResponseEntity.notFound().build(); // 404 если не найдено
         }
-        return data;
     }
 
-    @DeleteMapping("/pages/{id}") // Удаление страницы
-    public void destroy(@PathVariable String id) {
-        pages.removeIf(p -> p.getSlug().equals(id));
+    @DeleteMapping("/pages/{id}")
+    public ResponseEntity<Void> destroy(@PathVariable String id) {
+        boolean removed = pages.removeIf(p -> p.getSlug().equals(id));
+
+        if (removed) {
+            return ResponseEntity.noContent().build(); // 204 при успешном удалении
+        } else {
+            return ResponseEntity.notFound().build(); // 404 если не найдено
+        }
     }
 }
