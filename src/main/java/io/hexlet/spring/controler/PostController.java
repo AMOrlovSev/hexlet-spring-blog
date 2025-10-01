@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,14 +51,15 @@ public class PostController {
         var result = posts.stream().limit(limit).toList();
 
         return ResponseEntity.ok()
+                .header("X-Total-Count", String.valueOf(posts.size()))
                 .body(result);
     }
 
     @PostMapping("/posts") // Создание страницы
     public ResponseEntity<Post> create(@RequestBody Post post) {
         posts.add(post);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(post);
+        URI location = URI.create("/posts/" + post.getId());
+        return ResponseEntity.created(location).body(post);
     }
 
     @GetMapping("/posts/{id}")
@@ -75,21 +77,19 @@ public class PostController {
 
     @PutMapping("/posts/{id}")
     public ResponseEntity<Post> update(@PathVariable String id, @RequestBody Post data) {
-        Optional<Post> maybePost = posts.stream()
+        var maybePost = posts.stream()
                 .filter(p -> p.getId().equals(id))
                 .findFirst();
-
+        var status = HttpStatus.NOT_FOUND;
         if (maybePost.isPresent()) {
             Post post = maybePost.get();
             post.setTitle(data.getTitle());
             post.setContent(data.getContent());
             post.setAuthor(data.getAuthor());
             post.setCreatedAt(data.getCreatedAt());
-
-            return ResponseEntity.ok(post); // Возвращаем ОБНОВЛЕННЫЙ пост
-        } else {
-            return ResponseEntity.notFound().build(); // 404 если не найден
+            status = HttpStatus.OK;
         }
+        return ResponseEntity.status(status).body(data);
     }
 
     @DeleteMapping("/posts/{id}") // Удаление страницы
