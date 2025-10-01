@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
+@RequestMapping("/api/posts")
 public class PostController {
     private List<Post> posts = new ArrayList<Post>();
 
@@ -46,7 +47,7 @@ public class PostController {
         posts.add(post3);
     }
 
-    @GetMapping("/posts") // Список страниц
+    @GetMapping
     public ResponseEntity<List<Post>> index(@RequestParam(defaultValue = "10") Integer limit) {
         var result = posts.stream().limit(limit).toList();
 
@@ -55,14 +56,14 @@ public class PostController {
                 .body(result);
     }
 
-    @PostMapping("/posts") // Создание страницы
+    @PostMapping
     public ResponseEntity<Post> create(@RequestBody Post post) {
         posts.add(post);
         URI location = URI.create("/posts/" + post.getId());
         return ResponseEntity.created(location).body(post);
     }
 
-    @GetMapping("/posts/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<Post> show(@PathVariable String id) {
         Optional<Post> post = posts.stream()
                 .filter(p -> p.getId().equals(id))
@@ -75,7 +76,7 @@ public class PostController {
         }
     }
 
-    @PutMapping("/posts/{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<Post> update(@PathVariable String id, @RequestBody Post data) {
         var maybePost = posts.stream()
                 .filter(p -> p.getId().equals(id))
@@ -92,7 +93,7 @@ public class PostController {
         return ResponseEntity.status(status).body(data);
     }
 
-    @DeleteMapping("/posts/{id}") // Удаление страницы
+    @DeleteMapping("/{id}") // Удаление страницы
     public ResponseEntity<Void> destroy(@PathVariable String id) {
         boolean removed = posts.removeIf(p -> p.getId().equals(id));
 

@@ -1,8 +1,6 @@
 package io.hexlet.spring.controler;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import io.hexlet.spring.util.Data;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
