@@ -3,6 +3,7 @@ package io.hexlet.spring.controller;
 import io.hexlet.spring.model.Post;
 import io.hexlet.spring.repository.PostRepository;
 import jakarta.annotation.PostConstruct;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -64,10 +65,10 @@ public class PostController {
     }
 
     @PostMapping
-    public ResponseEntity<Post> create(@RequestBody Post post) {
-        postRepository.save(post);
-        URI location = URI.create("/posts/" + post.getId());
-        return ResponseEntity.created(location).body(post);
+    public ResponseEntity<Post> create(@Valid @RequestBody Post post) {
+        Post saved = postRepository.save(post);
+        URI location = URI.create("/api/posts/" + saved.getId());
+        return ResponseEntity.created(location).body(saved);
     }
 
     @GetMapping("/{id}")
@@ -79,19 +80,19 @@ public class PostController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Post> update(@PathVariable Long id, @RequestBody Post data) {
-        var maybePost = postRepository.findById(id);
-        var status = HttpStatus.NOT_FOUND;
+    public ResponseEntity<Post> update(@PathVariable Long id, @Valid @RequestBody Post data) {
+        Optional<Post> maybePost = postRepository.findById(id);
+
         if (maybePost.isPresent()) {
             Post post = maybePost.get();
             post.setTitle(data.getTitle());
             post.setContent(data.getContent());
             post.setPublished(data.getPublished());
-            status = HttpStatus.OK;
-            postRepository.save(post);
-            return ResponseEntity.status(status).body(post);
+            Post updated = postRepository.save(post);
+            return ResponseEntity.ok(updated);
         }
-        return ResponseEntity.status(status).body(data);
+
+        return ResponseEntity.notFound().build();
     }
 
     @DeleteMapping("/{id}") // Удаление страницы
