@@ -1,4 +1,4 @@
-package io.hexlet.spring.controler;
+package io.hexlet.spring.controller;
 
 import java.util.List;
 

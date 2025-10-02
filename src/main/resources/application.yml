@@ -1,9 +1,19 @@
 spring:
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driverClassName: org.h2.Driver
+    username: ao
+    password:
+  h2:
+    console:
+      enabled: true
   jpa:
     show-sql: true       # вывод SQL-запросов
+    hibernate:
+      ddl-auto: update
 output:
   ansi:
-  enabled: always    # цветной вывод логотипа
+    enabled: always    # цветной вывод логотипа
 logging:
   pattern:
     dateformat: "yyyy-MM-dd HH:mm:ss"  # кастомный формат даты в логах

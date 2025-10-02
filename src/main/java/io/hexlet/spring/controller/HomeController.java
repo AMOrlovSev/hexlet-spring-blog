@@ -1,4 +1,4 @@
-package io.hexlet.spring.controler;
+package io.hexlet.spring.controller;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
