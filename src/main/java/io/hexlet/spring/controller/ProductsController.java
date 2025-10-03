@@ -1,5 +1,6 @@
 package io.hexlet.spring.controller;
 
+import io.hexlet.spring.exception.ResourceAlreadyExistsException;
 import io.hexlet.spring.exception.ResourceNotFoundException;
 import io.hexlet.spring.model.Product;
 import io.hexlet.spring.repository.ProductRepository;
@@ -32,10 +33,15 @@ public class ProductsController {
     @PostMapping(path = "")
     @ResponseStatus(HttpStatus.CREATED)
     public Product create(@RequestBody Product product) {
+        if (productRepository.findAll().contains(product)) {
+            throw new ResourceAlreadyExistsException("Product with title '" + product.getTitle()
+                    + "' and price " + product.getPrice() + " already exists");
+        }
+
         return productRepository.save(product);
     }
 
-    // BEGIN (write your solution here)
+
     @GetMapping(path = "/{id}")
     public Product show(@PathVariable long id) {
         return productRepository.findById(id)
