@@ -5,16 +5,9 @@ import io.hexlet.spring.exception.ResourceNotFoundException;
 import io.hexlet.spring.model.Product;
 import io.hexlet.spring.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.data.domain.Sort;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.util.List;
 
@@ -25,9 +18,18 @@ public class ProductsController {
     @Autowired
     private ProductRepository productRepository;
 
+//    @GetMapping(path = "")
+//    public List<Product> index() {
+//        return productRepository.findAll();
+//    }
+
     @GetMapping(path = "")
-    public List<Product> index() {
-        return productRepository.findAll();
+    public List<Product> index(
+            @RequestParam(defaultValue = "0") Integer min,
+            @RequestParam(defaultValue = "" + Integer.MAX_VALUE) Integer max) {
+
+        Sort sort = Sort.by(Sort.Order.asc("price"));
+        return productRepository.findByPriceBetween(min, max, sort);
     }
 
     @PostMapping(path = "")
