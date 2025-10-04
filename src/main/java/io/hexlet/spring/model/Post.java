@@ -28,9 +28,7 @@ public class Post {
     @Size(min = 10, max = 1000, message = "Content must be between 10 and 1000 characters")
     private String content;
 
-    @NotBlank(message = "Author name is required")
-    @Size(min = 2, max = 50, message = "Author name must be between 2 and 50 characters")
-    private String published;
+    private Boolean published;
 
     @CreatedDate
     @Column(nullable = false, updatable = false)

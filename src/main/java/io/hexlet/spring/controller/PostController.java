@@ -5,6 +5,10 @@ import io.hexlet.spring.repository.PostRepository;
 import jakarta.annotation.PostConstruct;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -34,34 +38,42 @@ public class PostController {
         post1.setId(1L);
         post1.setTitle("Мой первый пост в блоге");
         post1.setContent("Сегодня я начал вести свой блог. Это очень волнительно! Буду делиться своими мыслями и идеями.");
-        post1.setPublished("Алексей");
+        post1.setPublished(false);
 
         Post post2 = new Post();
         post2.setId(2L);
         post2.setTitle("Изучение Java");
         post2.setContent("Продолжаю изучать Java. Сегодня разбирался с коллекциями и потоками. Очень мощные инструменты!");
-        post2.setPublished("Мария");
+        post2.setPublished(true);
 
         Post post3 = new Post();
         post3.setId(3L);
         post3.setTitle("Выходные планы");
         post3.setContent("На выходных планирую поход в горы. Надеюсь, погода не подведет и будет возможность сделать красивые фотографии.");
-        post3.setPublished("Дмитрий");
+        post3.setPublished(true);
 
         postRepository.save(post1);
         postRepository.save(post2);
         postRepository.save(post3);
     }
 
-    @GetMapping
-    public ResponseEntity<List<Post>> index(@RequestParam(defaultValue = "10") Integer limit) {
-        List<Post> result = postRepository.findAll().stream().limit(limit).collect(Collectors.toList());
+//    @GetMapping
+//    public ResponseEntity<List<Post>> index(@RequestParam(defaultValue = "10") Integer limit) {
+//        List<Post> result = postRepository.findAll().stream().limit(limit).collect(Collectors.toList());
+//
+//        long totalCount = postRepository.count();
+//
+//        return ResponseEntity.ok()
+//                .header("X-Total-Count", String.valueOf(totalCount))
+//                .body(result);
+//    }
 
-        long totalCount = postRepository.count();
-
-        return ResponseEntity.ok()
-                .header("X-Total-Count", String.valueOf(totalCount))
-                .body(result);
+    @GetMapping("")
+    public Page<Post> getPublishedPosts(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        return postRepository.findByPublishedTrue(pageable);
     }
 
     @PostMapping
