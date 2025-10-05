@@ -1,6 +1,8 @@
 package io.hexlet.spring.controller;
 
+import io.hexlet.spring.exception.ResourceNotFoundException;
 import io.hexlet.spring.model.Post;
+import io.hexlet.spring.repository.CommentRepository;
 import io.hexlet.spring.repository.PostRepository;
 import jakarta.annotation.PostConstruct;
 import jakarta.validation.Valid;
@@ -24,6 +26,9 @@ import java.util.stream.Collectors;
 public class PostController {
     @Autowired
     private PostRepository postRepository;
+
+    @Autowired
+    private CommentRepository commentRepository;
 
     @PostConstruct
     public void init() {
@@ -68,52 +73,100 @@ public class PostController {
 //                .body(result);
 //    }
 
-    @GetMapping("")
-    public Page<Post> getPublishedPosts(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        return postRepository.findByPublishedTrue(pageable);
+//    @GetMapping("")
+//    public Page<Post> getPublishedPosts(
+//            @RequestParam(defaultValue = "0") int page,
+//            @RequestParam(defaultValue = "10") int size) {
+//        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+//        return postRepository.findByPublishedTrue(pageable);
+//    }
+//
+//    @PostMapping
+//    public ResponseEntity<Post> create(@Valid @RequestBody Post post) {
+//        Post saved = postRepository.save(post);
+//        URI location = URI.create("/api/posts/" + saved.getId());
+//        return ResponseEntity.created(location).body(saved);
+//    }
+//
+//    @GetMapping("/{id}")
+//    public ResponseEntity<Post> show(@PathVariable Long id) {
+//        Optional<Post> post = postRepository.findById(id);
+//
+//        return post.map(ResponseEntity::ok)
+//                .orElse(ResponseEntity.notFound().build()); // 200 OK или 404 Not Found
+//    }
+//
+//    @PutMapping("/{id}")
+//    public ResponseEntity<Post> update(@PathVariable Long id, @Valid @RequestBody Post data) {
+//        Optional<Post> maybePost = postRepository.findById(id);
+//
+//        if (maybePost.isPresent()) {
+//            Post post = maybePost.get();
+//            post.setTitle(data.getTitle());
+//            post.setContent(data.getContent());
+//            post.setPublished(data.getPublished());
+//            Post updated = postRepository.save(post);
+//            return ResponseEntity.ok(updated);
+//        }
+//
+//        return ResponseEntity.notFound().build();
+//    }
+//
+//    @DeleteMapping("/{id}") // Удаление страницы
+//    public ResponseEntity<Void> destroy(@PathVariable Long id) {
+//        if (!postRepository.existsById(id)) {
+//            return ResponseEntity.notFound().build(); // 404
+//        }
+//
+//        postRepository.deleteById(id);
+//        return ResponseEntity.noContent().build(); // 204
+//    }
+
+
+    // GET /api/posts — список всех постов
+    @GetMapping
+    public List<Post> getAllPosts() {
+        return postRepository.findAll();
     }
 
-    @PostMapping
-    public ResponseEntity<Post> create(@Valid @RequestBody Post post) {
-        Post saved = postRepository.save(post);
-        URI location = URI.create("/api/posts/" + saved.getId());
-        return ResponseEntity.created(location).body(saved);
-    }
-
+    // GET /api/posts/{id} – просмотр конкретного поста
     @GetMapping("/{id}")
-    public ResponseEntity<Post> show(@PathVariable Long id) {
-        Optional<Post> post = postRepository.findById(id);
-
-        return post.map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build()); // 200 OK или 404 Not Found
+    public Post getPostById(@PathVariable Long id) {
+        return postRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Post not found with id: " + id));
     }
 
+    // POST /api/posts – создание нового поста
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public Post createPost(@RequestBody Post post) {
+        return postRepository.save(post);
+    }
+
+    // PUT /api/posts/{id} – обновление поста
     @PutMapping("/{id}")
-    public ResponseEntity<Post> update(@PathVariable Long id, @Valid @RequestBody Post data) {
-        Optional<Post> maybePost = postRepository.findById(id);
+    public Post updatePost(@PathVariable Long id, @RequestBody Post postDetails) {
+        Post post = postRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Post not found with id: " + id));
 
-        if (maybePost.isPresent()) {
-            Post post = maybePost.get();
-            post.setTitle(data.getTitle());
-            post.setContent(data.getContent());
-            post.setPublished(data.getPublished());
-            Post updated = postRepository.save(post);
-            return ResponseEntity.ok(updated);
-        }
+        post.setTitle(postDetails.getTitle());
+        post.setContent(postDetails.getContent());
+        post.setPublished(postDetails.getPublished());
+        // Добавьте другие поля, которые нужно обновлять
 
-        return ResponseEntity.notFound().build();
+        return postRepository.save(post);
     }
 
-    @DeleteMapping("/{id}") // Удаление страницы
-    public ResponseEntity<Void> destroy(@PathVariable Long id) {
-        if (!postRepository.existsById(id)) {
-            return ResponseEntity.notFound().build(); // 404
-        }
+    // DELETE /api/posts/{id} – удаление поста
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deletePost(@PathVariable Long id) {
+        Post post = postRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Post not found with id: " + id));
 
-        postRepository.deleteById(id);
-        return ResponseEntity.noContent().build(); // 204
+        // Сначала удаляем все комментарии этого поста
+        commentRepository.deleteByPostId(id);
+        // Затем удаляем сам пост
+        postRepository.delete(post);
     }
 }
