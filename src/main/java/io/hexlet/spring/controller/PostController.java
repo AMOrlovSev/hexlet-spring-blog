@@ -34,7 +34,7 @@ public class PostController {
     public void init() {
         // Проверяем, есть ли уже данные в базе
         if (postRepository.count() == 0) {
-            initializePosts();
+            //initializePosts();
         }
     }
 
