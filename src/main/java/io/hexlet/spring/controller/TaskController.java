@@ -32,7 +32,7 @@ public class TaskController {
     @GetMapping(path = "/{id}")
     public Task show(@PathVariable long id) {
 
-        var task =  taskRepository.findById(id)
+        var task = taskRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Task with id " + id + " not found"));
 
         return task;
