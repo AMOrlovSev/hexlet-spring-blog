@@ -1,17 +1,20 @@
 package io.hexlet.spring.controller;
 
-import io.hexlet.spring.dto.UserDTO;
+import io.hexlet.spring.dto.user.UserDTO;
+import io.hexlet.spring.dto.user.UserPatchDTO;
 import io.hexlet.spring.exception.ResourceNotFoundException;
+import io.hexlet.spring.mapper.PostMapper;
+import io.hexlet.spring.mapper.UserMapper;
 import io.hexlet.spring.model.User;
 import io.hexlet.spring.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicLong;
 
 @RestController
 @RequestMapping("/api/users")
@@ -26,6 +29,9 @@ public class UserController {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private UserMapper userMapper;
+
 //    // GET /api/users - получить всех пользователей
 //    @GetMapping
 //    public List<User> getAllUsers() {
@@ -35,7 +41,7 @@ public class UserController {
     public List<UserDTO> index() {
         var users = userRepository.findAll();
         var result = users.stream()
-                .map(this::toDTO)
+                .map(userMapper::map)
                 .toList();
         return result;
     }
@@ -98,6 +104,20 @@ public class UserController {
 
         userRepository.deleteById(id);
         return ResponseEntity.noContent().build(); // 204
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<UserDTO> patchUser(@PathVariable Long id,
+                                             @RequestBody UserPatchDTO dto) {
+        var user = userRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        dto.getFirstName().ifPresent(user::setFirstName);
+        dto.getLastName().ifPresent(user::setLastName);
+        dto.getEmail().ifPresent(user::setEmail);
+
+        userRepository.save(user);
+        return ResponseEntity.ok(userMapper.map(user));
     }
 
 

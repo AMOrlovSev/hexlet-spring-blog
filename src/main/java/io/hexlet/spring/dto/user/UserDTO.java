@@ -1,4 +1,4 @@
-package io.hexlet.spring.dto;
+package io.hexlet.spring.dto.user;
 
 import lombok.Getter;
 import lombok.Setter;

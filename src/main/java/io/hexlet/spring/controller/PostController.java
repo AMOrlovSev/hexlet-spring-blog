@@ -2,6 +2,7 @@ package io.hexlet.spring.controller;
 
 import io.hexlet.spring.dto.post.PostCreateDTO;
 import io.hexlet.spring.dto.post.PostDTO;
+import io.hexlet.spring.dto.post.PostPatchDTO;
 import io.hexlet.spring.dto.post.PostUpdateDTO;
 import io.hexlet.spring.exception.ResourceNotFoundException;
 import io.hexlet.spring.mapper.PostMapper;
@@ -133,7 +134,7 @@ public class PostController {
     public List<PostDTO> listPosts() {
         return postRepository.findAll()
                 .stream()
-                .map(this::toDTO)
+                .map(postMapper::toDTO)
                 .toList();
     }
 
@@ -147,7 +148,7 @@ public class PostController {
     @GetMapping("/{id}")
     public ResponseEntity<PostDTO> getPost(@PathVariable Long id) {
         return postRepository.findById(id)
-                .map(post -> ResponseEntity.ok(this.toDTO(post)))
+                .map(post -> ResponseEntity.ok(postMapper.toDTO(post)))
                 .orElse(ResponseEntity.notFound().build());
     }
 
@@ -224,23 +225,37 @@ public class PostController {
         postRepository.delete(post);
     }
 
+    @PatchMapping("/{id}")
+    public ResponseEntity<PostDTO> patchPost(@PathVariable Long id,
+                                             @RequestBody PostPatchDTO dto) {
+        var post = postRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
-    private Post toEntity(PostUpdateDTO postDTO, Post post) {
-        post.setTitle(postDTO.getTitle());
-        post.setContent(postDTO.getContent());
-        post.setUpdatedAt(LocalDateTime.now());
-        return post;
+        dto.getTitle().ifPresent(post::setTitle);
+        dto.getContent().ifPresent(post::setContent);
+        dto.getPublished().ifPresent(post::setPublished);
+
+        postRepository.save(post);
+        return ResponseEntity.ok(postMapper.toDTO(post));
     }
 
-    public PostDTO toDTO(Post post) {
-        PostDTO dto = new PostDTO();
-        dto.setId(post.getId());
-        dto.setTitle(post.getTitle());
-        dto.setContent(post.getContent());
-        dto.setPublished(post.getPublished());
-        dto.setCreatedAt(post.getCreatedAt());
-        dto.setUpdatedAt(post.getUpdatedAt());
-        dto.setUserId(post.getUserId());
-        return dto;
-    }
+
+//    private Post toEntity(PostUpdateDTO postDTO, Post post) {
+//        post.setTitle(postDTO.getTitle());
+//        post.setContent(postDTO.getContent());
+//        post.setUpdatedAt(LocalDateTime.now());
+//        return post;
+//    }
+//
+//    public PostDTO toDTO(Post post) {
+//        PostDTO dto = new PostDTO();
+//        dto.setId(post.getId());
+//        dto.setTitle(post.getTitle());
+//        dto.setContent(post.getContent());
+//        dto.setPublished(post.getPublished());
+//        dto.setCreatedAt(post.getCreatedAt());
+//        dto.setUpdatedAt(post.getUpdatedAt());
+//        dto.setUserId(post.getUserId());
+//        return dto;
+//    }
 }

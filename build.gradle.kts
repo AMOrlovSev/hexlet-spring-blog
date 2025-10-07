@@ -39,6 +39,8 @@ dependencies {
     annotationProcessor("org.mapstruct:mapstruct-processor:1.5.5.Final")
     testAnnotationProcessor("org.mapstruct:mapstruct-processor:1.5.5.Final")
 
+    implementation("org.openapitools:jackson-databind-nullable:0.2.6")
+
     // Database (раскомментировать нужную)
     runtimeOnly("com.h2database:h2")
     // runtimeOnly("org.postgresql:postgresql")
