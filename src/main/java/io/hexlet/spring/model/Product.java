@@ -1,9 +1,7 @@
 package io.hexlet.spring.model;
 
-import jakarta.persistence.Id;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+
 import static jakarta.persistence.GenerationType.IDENTITY;
 
 import lombok.EqualsAndHashCode;
@@ -11,24 +9,27 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDate;
 
 @Entity
 @Table(name = "products")
+@EntityListeners(AuditingEntityListener.class)
 @Getter
 @Setter
-@EqualsAndHashCode(of = {"title", "price"})
+@EqualsAndHashCode(of = {"name", "cost"})
 public class Product {
+
     @Id
     @GeneratedValue(strategy = IDENTITY)
-    private Long id;
+    private long id;
 
-    private String title;
+    private String name;
 
-    private Integer price;
+    private int cost;
 
-    private Long vendorCode;
+    private long barcode;
 
     @LastModifiedDate
     private LocalDate updatedAt;
