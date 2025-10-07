@@ -3,6 +3,9 @@ package io.hexlet.spring.model;
 import static jakarta.persistence.GenerationType.IDENTITY;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -26,10 +29,16 @@ public class User {
     private Long id;
 
     @Column(name = "email", unique = true, nullable = false, length = 200)
+    @Email
+    @NotBlank
     private String email;
 
+    @NotBlank
+    @Size(min = 2, max = 50)
     private String firstName;
 
+    @NotBlank
+    @Size(min = 2, max = 50)
     private String lastName;
 
     @CreatedDate
