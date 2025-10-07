@@ -1,26 +1,19 @@
 package io.hexlet.spring.controller;
 
-import io.hexlet.spring.dto.PostDTO;
+import io.hexlet.spring.dto.post.PostCreateDTO;
+import io.hexlet.spring.dto.post.PostDTO;
 import io.hexlet.spring.exception.ResourceNotFoundException;
 import io.hexlet.spring.model.Post;
 import io.hexlet.spring.repository.CommentRepository;
 import io.hexlet.spring.repository.PostRepository;
-import jakarta.annotation.PostConstruct;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.net.URI;
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/posts")
@@ -152,11 +145,27 @@ public class PostController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // POST /api/posts – создание нового поста
+//    // POST /api/posts – создание нового поста
+//    @PostMapping
+//    @ResponseStatus(HttpStatus.CREATED)
+//    public Post createPost(@RequestBody Post post) {
+//        return postRepository.save(post);
+//    }
+
     @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public Post createPost(@RequestBody Post post) {
-        return postRepository.save(post);
+    public ResponseEntity<PostDTO> createPost(@Valid @RequestBody PostCreateDTO dto) {
+        var post = new Post();
+        post.setTitle(dto.getTitle());
+        post.setContent(dto.getContent());
+        post.setPublished(true);
+        post.setCreatedAt(LocalDateTime.now());
+        post.setUpdatedAt(LocalDateTime.now());
+
+        postRepository.save(post);
+
+        var response = toDTO(post);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     // PUT /api/posts/{id} – обновление поста
