@@ -2,6 +2,7 @@ package io.hexlet.spring.controller;
 
 import io.hexlet.spring.dto.post.PostCreateDTO;
 import io.hexlet.spring.dto.post.PostDTO;
+import io.hexlet.spring.dto.post.PostUpdateDTO;
 import io.hexlet.spring.exception.ResourceNotFoundException;
 import io.hexlet.spring.model.Post;
 import io.hexlet.spring.repository.CommentRepository;
@@ -11,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -170,16 +172,24 @@ public class PostController {
 
     // PUT /api/posts/{id} – обновление поста
     @PutMapping("/{id}")
-    public Post updatePost(@PathVariable Long id, @RequestBody Post postDetails) {
-        Post post = postRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Post not found with id: " + id));
+    public ResponseEntity<PostDTO> updatePost(
+            @PathVariable Long id,
+            @Valid @RequestBody PostUpdateDTO dto) {
 
-        post.setTitle(postDetails.getTitle());
-        post.setContent(postDetails.getContent());
-        post.setPublished(postDetails.getPublished());
-        // Добавьте другие поля, которые нужно обновлять
+        var post = postRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
-        return postRepository.save(post);
+        toEntity(dto, post);
+
+        post.setTitle(dto.getTitle());
+        post.setContent(dto.getContent());
+        post.setUpdatedAt(LocalDateTime.now());
+
+        postRepository.save(post);
+
+        var response = toDTO(post);
+
+        return ResponseEntity.ok(response);
     }
 
     // DELETE /api/posts/{id} – удаление поста
@@ -196,6 +206,12 @@ public class PostController {
     }
 
 
+    private Post toEntity(PostUpdateDTO postDTO, Post post) {
+        post.setTitle(postDTO.getTitle());
+        post.setContent(postDTO.getContent());
+        post.setUpdatedAt(LocalDateTime.now());
+        return post;
+    }
 
     public PostDTO toDTO(Post post) {
         PostDTO dto = new PostDTO();

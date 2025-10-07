@@ -20,11 +20,11 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<String> handleValidation(MethodArgumentNotValidException ex) {
-        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
-                .body("Validation failed: " + ex.getBindingResult().getFieldError().getDefaultMessage());
-    }
+//    @ExceptionHandler(MethodArgumentNotValidException.class)
+//    public ResponseEntity<String> handleValidation(MethodArgumentNotValidException ex) {
+//        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+//                .body("Validation failed: " + ex.getBindingResult().getFieldError().getDefaultMessage());
+//    }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, String>> handleValidationErrors(MethodArgumentNotValidException ex) {
