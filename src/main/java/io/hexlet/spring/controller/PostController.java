@@ -181,10 +181,6 @@ public class PostController {
 
         toEntity(dto, post);
 
-        post.setTitle(dto.getTitle());
-        post.setContent(dto.getContent());
-        post.setUpdatedAt(LocalDateTime.now());
-
         postRepository.save(post);
 
         var response = toDTO(post);
