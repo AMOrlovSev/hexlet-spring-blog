@@ -9,6 +9,10 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "products")
@@ -16,11 +20,19 @@ import lombok.Setter;
 @Setter
 @EqualsAndHashCode(of = {"title", "price"})
 public class Product {
-
     @Id
     @GeneratedValue(strategy = IDENTITY)
-    private long id;
+    private Long id;
 
     private String title;
-    private int price;
+
+    private Integer price;
+
+    private Long vendorCode;
+
+    @LastModifiedDate
+    private LocalDate updatedAt;
+
+    @CreatedDate
+    private LocalDate createdAt;
 }
