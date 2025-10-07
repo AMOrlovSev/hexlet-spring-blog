@@ -4,6 +4,7 @@ import io.hexlet.spring.dto.post.PostCreateDTO;
 import io.hexlet.spring.dto.post.PostDTO;
 import io.hexlet.spring.dto.post.PostUpdateDTO;
 import io.hexlet.spring.exception.ResourceNotFoundException;
+import io.hexlet.spring.mapper.PostMapper;
 import io.hexlet.spring.model.Post;
 import io.hexlet.spring.repository.CommentRepository;
 import io.hexlet.spring.repository.PostRepository;
@@ -25,6 +26,9 @@ public class PostController {
 
     @Autowired
     private CommentRepository commentRepository;
+
+    @Autowired
+    private PostMapper postMapper;
 
 //    @PostConstruct
 //    public void init() {
@@ -154,38 +158,57 @@ public class PostController {
 //        return postRepository.save(post);
 //    }
 
+//    @PostMapping
+//    public ResponseEntity<PostDTO> createPost(@Valid @RequestBody PostCreateDTO dto) {
+//        var post = new Post();
+//        post.setTitle(dto.getTitle());
+//        post.setContent(dto.getContent());
+//        post.setPublished(true);
+//        post.setCreatedAt(LocalDateTime.now());
+//        post.setUpdatedAt(LocalDateTime.now());
+//
+//        postRepository.save(post);
+//
+//        var response = toDTO(post);
+//
+//        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+//    }
+
     @PostMapping
-    public ResponseEntity<PostDTO> createPost(@Valid @RequestBody PostCreateDTO dto) {
-        var post = new Post();
-        post.setTitle(dto.getTitle());
-        post.setContent(dto.getContent());
-        post.setPublished(true);
-        post.setCreatedAt(LocalDateTime.now());
-        post.setUpdatedAt(LocalDateTime.now());
-
+    public ResponseEntity<PostDTO> create(@Valid @RequestBody PostCreateDTO dto) {
+        Post post = postMapper.toEntity(dto);
         postRepository.save(post);
-
-        var response = toDTO(post);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        return ResponseEntity.ok(postMapper.toDTO(post));
     }
 
     // PUT /api/posts/{id} – обновление поста
-    @PutMapping("/{id}")
-    public ResponseEntity<PostDTO> updatePost(
-            @PathVariable Long id,
-            @Valid @RequestBody PostUpdateDTO dto) {
+//    @PutMapping("/{id}")
+//    public ResponseEntity<PostDTO> updatePost(
+//            @PathVariable Long id,
+//            @Valid @RequestBody PostUpdateDTO dto) {
+//
+//        var post = postRepository.findById(id)
+//                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+//
+//        toEntity(dto, post);
+//
+//        postRepository.save(post);
+//
+//        var response = toDTO(post);
+//
+//        return ResponseEntity.ok(response);
+//    }
 
-        var post = postRepository.findById(id)
+    @PutMapping("/{id}")
+    public ResponseEntity<PostDTO> update(@PathVariable Long id,
+                                          @Valid @RequestBody PostUpdateDTO dto) {
+        Post post = postRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
-        toEntity(dto, post);
-
+        postMapper.updateEntityFromDTO(dto, post);
         postRepository.save(post);
 
-        var response = toDTO(post);
-
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(postMapper.toDTO(post));
     }
 
     // DELETE /api/posts/{id} – удаление поста

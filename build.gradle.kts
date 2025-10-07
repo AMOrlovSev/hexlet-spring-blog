@@ -2,6 +2,7 @@ plugins {
     java
     id("org.springframework.boot") version "3.2.2"
     id("io.spring.dependency-management") version "1.1.3"
+    kotlin("kapt") version "1.9.25" // важно для генерации
 }
 
 group = "io.hexlet"
@@ -33,6 +34,10 @@ dependencies {
     testImplementation(platform("org.junit:junit-bom:5.10.0"))
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.0")
     testImplementation("org.springframework.security:spring-security-test")
+
+    implementation("org.mapstruct:mapstruct:1.5.5.Final")
+    annotationProcessor("org.mapstruct:mapstruct-processor:1.5.5.Final")
+    testAnnotationProcessor("org.mapstruct:mapstruct-processor:1.5.5.Final")
 
     // Database (раскомментировать нужную)
     runtimeOnly("com.h2database:h2")
