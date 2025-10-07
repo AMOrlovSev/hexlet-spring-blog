@@ -1,5 +1,6 @@
 package io.hexlet.spring.controller;
 
+import io.hexlet.spring.dto.PostDTO;
 import io.hexlet.spring.exception.ResourceNotFoundException;
 import io.hexlet.spring.model.Post;
 import io.hexlet.spring.repository.CommentRepository;
@@ -30,37 +31,37 @@ public class PostController {
     @Autowired
     private CommentRepository commentRepository;
 
-    @PostConstruct
-    public void init() {
-        // Проверяем, есть ли уже данные в базе
-        if (postRepository.count() == 0) {
-            //initializePosts();
-        }
-    }
-
-    private void initializePosts() {
-        Post post1 = new Post();
-        post1.setId(1L);
-        post1.setTitle("Мой первый пост в блоге");
-        post1.setContent("Сегодня я начал вести свой блог. Это очень волнительно! Буду делиться своими мыслями и идеями.");
-        post1.setPublished(false);
-
-        Post post2 = new Post();
-        post2.setId(2L);
-        post2.setTitle("Изучение Java");
-        post2.setContent("Продолжаю изучать Java. Сегодня разбирался с коллекциями и потоками. Очень мощные инструменты!");
-        post2.setPublished(true);
-
-        Post post3 = new Post();
-        post3.setId(3L);
-        post3.setTitle("Выходные планы");
-        post3.setContent("На выходных планирую поход в горы. Надеюсь, погода не подведет и будет возможность сделать красивые фотографии.");
-        post3.setPublished(true);
-
-        postRepository.save(post1);
-        postRepository.save(post2);
-        postRepository.save(post3);
-    }
+//    @PostConstruct
+//    public void init() {
+//        // Проверяем, есть ли уже данные в базе
+//        if (postRepository.count() == 0) {
+//            //initializePosts();
+//        }
+//    }
+//
+//    private void initializePosts() {
+//        Post post1 = new Post();
+//        post1.setId(1L);
+//        post1.setTitle("Мой первый пост в блоге");
+//        post1.setContent("Сегодня я начал вести свой блог. Это очень волнительно! Буду делиться своими мыслями и идеями.");
+//        post1.setPublished(false);
+//
+//        Post post2 = new Post();
+//        post2.setId(2L);
+//        post2.setTitle("Изучение Java");
+//        post2.setContent("Продолжаю изучать Java. Сегодня разбирался с коллекциями и потоками. Очень мощные инструменты!");
+//        post2.setPublished(true);
+//
+//        Post post3 = new Post();
+//        post3.setId(3L);
+//        post3.setTitle("Выходные планы");
+//        post3.setContent("На выходных планирую поход в горы. Надеюсь, погода не подведет и будет возможность сделать красивые фотографии.");
+//        post3.setPublished(true);
+//
+//        postRepository.save(post1);
+//        postRepository.save(post2);
+//        postRepository.save(post3);
+//    }
 
 //    @GetMapping
 //    public ResponseEntity<List<Post>> index(@RequestParam(defaultValue = "10") Integer limit) {
@@ -123,17 +124,32 @@ public class PostController {
 //    }
 
 
-    // GET /api/posts — список всех постов
+//    // GET /api/posts — список всех постов
+//    @GetMapping
+//    public List<Post> getAllPosts() {
+//        return postRepository.findAll();
+//    }
+
     @GetMapping
-    public List<Post> getAllPosts() {
-        return postRepository.findAll();
+    public List<PostDTO> listPosts() {
+        return postRepository.findAll()
+                .stream()
+                .map(this::toDTO)
+                .toList();
     }
 
-    // GET /api/posts/{id} – просмотр конкретного поста
+//    // GET /api/posts/{id} – просмотр конкретного поста
+//    @GetMapping("/{id}")
+//    public Post getPostById(@PathVariable Long id) {
+//        return postRepository.findById(id)
+//                .orElseThrow(() -> new ResourceNotFoundException("Post not found with id: " + id));
+//    }
+
     @GetMapping("/{id}")
-    public Post getPostById(@PathVariable Long id) {
+    public ResponseEntity<PostDTO> getPost(@PathVariable Long id) {
         return postRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Post not found with id: " + id));
+                .map(post -> ResponseEntity.ok(this.toDTO(post)))
+                .orElse(ResponseEntity.notFound().build());
     }
 
     // POST /api/posts – создание нового поста
@@ -168,5 +184,19 @@ public class PostController {
         commentRepository.deleteByPostId(id);
         // Затем удаляем сам пост
         postRepository.delete(post);
+    }
+
+
+
+    public PostDTO toDTO(Post post) {
+        PostDTO dto = new PostDTO();
+        dto.setId(post.getId());
+        dto.setTitle(post.getTitle());
+        dto.setContent(post.getContent());
+        dto.setPublished(post.getPublished());
+        dto.setCreatedAt(post.getCreatedAt());
+        dto.setUpdatedAt(post.getUpdatedAt());
+        dto.setUserId(post.getUserId());
+        return dto;
     }
 }

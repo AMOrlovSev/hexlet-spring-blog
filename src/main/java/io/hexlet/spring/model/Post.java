@@ -36,4 +36,6 @@ public class Post {
 
     @LastModifiedDate
     private LocalDateTime updatedAt;
+
+    private Long userId;
 }

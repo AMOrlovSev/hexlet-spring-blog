@@ -1,5 +1,7 @@
 package io.hexlet.spring.controller;
 
+import io.hexlet.spring.dto.UserDTO;
+import io.hexlet.spring.exception.ResourceNotFoundException;
 import io.hexlet.spring.model.User;
 import io.hexlet.spring.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,10 +26,18 @@ public class UserController {
     @Autowired
     private UserRepository userRepository;
 
-    // GET /api/users - получить всех пользователей
-    @GetMapping
-    public List<User> getAllUsers() {
-        return userRepository.findAll(); // 200 OK
+//    // GET /api/users - получить всех пользователей
+//    @GetMapping
+//    public List<User> getAllUsers() {
+//        return userRepository.findAll(); // 200 OK
+//    }
+    @GetMapping("")
+    public List<UserDTO> index() {
+        var users = userRepository.findAll();
+        var result = users.stream()
+                .map(this::toDTO)
+                .toList();
+        return result;
     }
 
     // POST /api/users - создать пользователя
@@ -37,13 +47,29 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).body(user); // 201 Created
     }
 
-    // GET /api/users/{id} - получить пользователя по ID
-    @GetMapping("/{id}")
-    public ResponseEntity<User> getUser(@PathVariable Long id) {
-        var user = userRepository.findById(id);
+//    // GET /api/users/{id} - получить пользователя по ID
+//    @GetMapping("/{id}")
+//    public ResponseEntity<User> getUser(@PathVariable Long id) {
+//        var user = userRepository.findById(id);
+//
+//        return user.map(ResponseEntity::ok)
+//                .orElse(ResponseEntity.notFound().build()); // 200 OK или 404 Not Found
+//    }
 
-        return user.map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build()); // 200 OK или 404 Not Found
+    @GetMapping("{id}")
+    @ResponseStatus(HttpStatus.OK)
+    // Пользователь автоматически преобразуется в JSON
+    public UserDTO show(@PathVariable Long id) {
+        var user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Not Found"));
+
+        var dto = new UserDTO();
+        dto.setId(user.getId());
+        dto.setEmail(user.getEmail());
+        dto.setFirstName(user.getFirstName());
+        dto.setLastName(user.getLastName());
+
+        return dto;
     }
 
     // PUT /api/users/{id} - обновить пользователя
@@ -72,5 +98,16 @@ public class UserController {
 
         userRepository.deleteById(id);
         return ResponseEntity.noContent().build(); // 204
+    }
+
+
+    // Чтобы сделать работу удобнее
+    // И избежать дублирования
+    private UserDTO toDTO(User user) {
+        var dto = new UserDTO();
+        dto.setId(user.getId());
+        dto.setFirstName(user.getFirstName());
+        dto.setLastName(user.getLastName());
+        return dto;
     }
 }
