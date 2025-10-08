@@ -52,4 +52,7 @@ public class User {
 
     @LastModifiedDate
     private LocalDateTime updatedAt;
+
+    @OneToMany(mappedBy = "assignee", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Task> tasks = new ArrayList<>();
 }

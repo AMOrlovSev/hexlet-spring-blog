@@ -1,11 +1,10 @@
 package io.hexlet.spring.model;
 
-import jakarta.persistence.Id;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
-import jakarta.persistence.EntityListeners;
+import jakarta.persistence.*;
+
 import static jakarta.persistence.GenerationType.IDENTITY;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import java.time.LocalDate;
@@ -13,7 +12,6 @@ import java.time.LocalDate;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-import jakarta.persistence.GeneratedValue;
 
 @Entity
 @Table(name = "tasks")
@@ -41,4 +39,8 @@ public class Task {
     @CreatedDate
     // END
     private LocalDate createdAt;
+
+    @NotNull
+    @ManyToOne(fetch = FetchType.LAZY)
+    private User assignee;
 }
