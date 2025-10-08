@@ -1,23 +1,39 @@
 package io.hexlet.spring.mapper;
 
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingConstants;
+import org.mapstruct.MappingTarget;
+import org.mapstruct.Named;
+import org.mapstruct.NullValuePropertyMappingStrategy;
+import org.mapstruct.ReportingPolicy;
+
 import io.hexlet.spring.dto.post.PostCreateDTO;
 import io.hexlet.spring.dto.post.PostDTO;
 import io.hexlet.spring.dto.post.PostUpdateDTO;
 import io.hexlet.spring.model.Post;
-import org.mapstruct.*;
+import io.hexlet.spring.model.Tag;
+
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Mapper(
-        // Подключение JsonNullableMapper
-        uses = { JsonNullableMapper.class },
+        uses = { JsonNullableMapper.class, ReferenceMapper.class },
         nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
         componentModel = MappingConstants.ComponentModel.SPRING,
         unmappedTargetPolicy = ReportingPolicy.IGNORE
 )
-public interface PostMapper {
+public abstract class PostMapper {
 
-    PostDTO toDTO(Post post);
+    @Mapping(target = "user", source = "userId")
+    @Mapping(target = "tags", source = "tagIds", qualifiedByName = "tagIdsToTags")
+    public abstract Post map(PostCreateDTO dto);
 
-    Post toEntity(PostCreateDTO dto);
+    @Mapping(source = "user.id", target = "userId")
+    @Mapping(target = "tags", source = "tags", qualifiedByName = "tagsToTagDTOs")
+    public abstract PostDTO map(Post model);
 
-    void updateEntityFromDTO(PostUpdateDTO dto, @MappingTarget Post post);
+    @Mapping(target = "user", source = "authorId")
+    @Mapping(target = "tags", source = "tagIds", qualifiedByName = "tagIdsToTags")
+    public abstract void update(PostUpdateDTO dto, @MappingTarget Post model);
 }
