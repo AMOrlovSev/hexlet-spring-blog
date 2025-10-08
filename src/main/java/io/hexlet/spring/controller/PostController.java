@@ -9,6 +9,7 @@ import io.hexlet.spring.mapper.PostMapper;
 import io.hexlet.spring.model.Post;
 import io.hexlet.spring.repository.CommentRepository;
 import io.hexlet.spring.repository.PostRepository;
+import io.hexlet.spring.repository.UserRepository;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -27,6 +28,9 @@ public class PostController {
 
     @Autowired
     private CommentRepository commentRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Autowired
     private PostMapper postMapper;
@@ -175,11 +179,23 @@ public class PostController {
 //        return ResponseEntity.status(HttpStatus.CREATED).body(response);
 //    }
 
+//    @PostMapping
+//    public ResponseEntity<PostDTO> create(@Valid @RequestBody PostCreateDTO dto) {
+//        Post post = postMapper.toEntity(dto);
+//        postRepository.save(post);
+//        return ResponseEntity.ok(postMapper.toDTO(post));
+//    }
+
     @PostMapping
-    public ResponseEntity<PostDTO> create(@Valid @RequestBody PostCreateDTO dto) {
-        Post post = postMapper.toEntity(dto);
+    public ResponseEntity<PostDTO> createPost(@Valid @RequestBody PostCreateDTO dto) {
+        var user = userRepository.findById(dto.getUserId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+        var post = postMapper.toEntity(dto);
+        post.setUser(user);
+
         postRepository.save(post);
-        return ResponseEntity.ok(postMapper.toDTO(post));
+        return ResponseEntity.status(HttpStatus.CREATED).body(postMapper.toDTO(post));
     }
 
     // PUT /api/posts/{id} – обновление поста

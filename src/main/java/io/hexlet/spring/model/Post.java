@@ -37,5 +37,7 @@ public class Post {
     @LastModifiedDate
     private LocalDateTime updatedAt;
 
-    private Long userId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
 }
