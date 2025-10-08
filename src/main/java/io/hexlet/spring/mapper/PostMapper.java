@@ -30,10 +30,9 @@ public abstract class PostMapper {
     public abstract Post map(PostCreateDTO dto);
 
     @Mapping(source = "user.id", target = "userId")
-    @Mapping(target = "tagIds", source = "tags", qualifiedByName = "tagsToTagIds")
+    @Mapping(target = "tags", source = "tags", qualifiedByName = "tagsToTagDTOs")
     public abstract PostDTO map(Post model);
 
-    @Mapping(target = "user", source = "userId")
     @Mapping(target = "tags", source = "tagIds", qualifiedByName = "tagIdsToTags")
     public abstract void update(PostUpdateDTO dto, @MappingTarget Post model);
 
@@ -51,13 +50,20 @@ public abstract class PostMapper {
                 .collect(Collectors.toSet());
     }
 
-    @Named("tagsToTagIds")
-    protected Set<Long> tagsToTagIds(Set<Tag> tags) {
+    @Named("tagsToTagDTOs")
+    protected Set<io.hexlet.spring.dto.tag.TagDTO> tagsToTagDTOs(Set<Tag> tags) {
         if (tags == null) {
             return Set.of();
         }
         return tags.stream()
-                .map(Tag::getId)
+                .map(tag -> {
+                    var tagDTO = new io.hexlet.spring.dto.tag.TagDTO();
+                    tagDTO.setId(tag.getId());
+                    tagDTO.setName(tag.getName());
+                    tagDTO.setCreatedAt(tag.getCreatedAt());
+                    tagDTO.setUpdatedAt(tag.getUpdatedAt());
+                    return tagDTO;
+                })
                 .collect(Collectors.toSet());
     }
 }
