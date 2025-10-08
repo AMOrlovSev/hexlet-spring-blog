@@ -1,12 +1,8 @@
 package io.hexlet.spring.mapper;
 
-import io.hexlet.spring.dto.product.ProductCreateDTO;
-import io.hexlet.spring.dto.product.ProductDTO;
-import io.hexlet.spring.dto.product.ProductUpdateDTO;
 import io.hexlet.spring.dto.user.UserCreateDTO;
 import io.hexlet.spring.dto.user.UserDTO;
 import io.hexlet.spring.dto.user.UserUpdateDTO;
-import io.hexlet.spring.model.Product;
 import io.hexlet.spring.model.User;
 import org.mapstruct.*;
 

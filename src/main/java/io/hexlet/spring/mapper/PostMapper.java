@@ -30,10 +30,34 @@ public abstract class PostMapper {
     public abstract Post map(PostCreateDTO dto);
 
     @Mapping(source = "user.id", target = "userId")
-    @Mapping(target = "tags", source = "tags", qualifiedByName = "tagsToTagDTOs")
+    @Mapping(target = "tagIds", source = "tags", qualifiedByName = "tagsToTagIds")
     public abstract PostDTO map(Post model);
 
-    @Mapping(target = "user", source = "authorId")
+    @Mapping(target = "user", source = "userId")
     @Mapping(target = "tags", source = "tagIds", qualifiedByName = "tagIdsToTags")
     public abstract void update(PostUpdateDTO dto, @MappingTarget Post model);
+
+    @Named("tagIdsToTags")
+    protected Set<Tag> tagIdsToTags(Set<Long> tagIds) {
+        if (tagIds == null) {
+            return Set.of();
+        }
+        return tagIds.stream()
+                .map(id -> {
+                    Tag tag = new Tag();
+                    tag.setId(id);
+                    return tag;
+                })
+                .collect(Collectors.toSet());
+    }
+
+    @Named("tagsToTagIds")
+    protected Set<Long> tagsToTagIds(Set<Tag> tags) {
+        if (tags == null) {
+            return Set.of();
+        }
+        return tags.stream()
+                .map(Tag::getId)
+                .collect(Collectors.toSet());
+    }
 }

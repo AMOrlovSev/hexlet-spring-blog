@@ -14,7 +14,6 @@ import java.time.ZoneId;
 
 @Configuration
 public class ClockConfig {
-    // Бин Clock: либо системное время, либо фиксированное из application.yml
     @Bean
     public Clock clock(@Value("${app.fixedTime:}") String fixedTime) {
         if (!fixedTime.isEmpty()) {
@@ -28,7 +27,6 @@ public class ClockConfig {
         return Clock.systemDefaultZone();
     }
 
-    // BEGIN (write your solution here)
     @Bean
     @RequestScope
     public Daytime daytime(Clock clock) {
@@ -39,5 +37,4 @@ public class ClockConfig {
             return new Night();
         }
     }
-    // END
 }

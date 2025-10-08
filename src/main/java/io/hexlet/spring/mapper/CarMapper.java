@@ -10,8 +10,6 @@ import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.ReportingPolicy;
 
-
-// BEGIN (write your solution here)
 @Mapper(
         uses = { JsonNullableMapper.class },
         nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
@@ -26,4 +24,3 @@ public abstract class CarMapper {
 
     public abstract CarDTO map(Car model);
 }
-// END

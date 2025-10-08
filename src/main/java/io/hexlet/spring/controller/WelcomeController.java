@@ -8,10 +8,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class WelcomeController {
 
-    // BEGIN (write your solution here)
     @Autowired
     private Daytime daytime;
-    // END
 
     @GetMapping(path = "/welc")
     public String welcome() {
