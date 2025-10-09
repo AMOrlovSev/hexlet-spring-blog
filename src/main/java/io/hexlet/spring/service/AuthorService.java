@@ -19,38 +19,35 @@ public class AuthorService {
     @Autowired
     private AuthorMapper authorMapper;
 
-    public List<AuthorDTO> getAll() {
+    // BEGIN (write your solution here)
+    public List<AuthorDTO> getAllAuthors() {
         var authors = authorRepository.findAll();
-        var result = authors.stream()
+        return authors.stream()
                 .map(authorMapper::map)
                 .toList();
-        return result;
     }
 
-    public AuthorDTO create(AuthorCreateDTO authorData) {
+    public AuthorDTO createAuthor(AuthorCreateDTO authorData) {
         var author = authorMapper.map(authorData);
         authorRepository.save(author);
-        var authorDTO = authorMapper.map(author);
-        return authorDTO;
+        return authorMapper.map(author);
     }
 
-    public AuthorDTO findById(Long id) {
+    public AuthorDTO getAuthorById(Long id) {
         var author = authorRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Author Not Found with id: " + id));
-        var authorDTO = authorMapper.map(author);
-        return authorDTO;
+                .orElseThrow(() -> new ResourceNotFoundException("Author not found with id: " + id));
+        return authorMapper.map(author);
     }
 
-    public AuthorDTO update(AuthorUpdateDTO authorData, Long id) {
+    public AuthorDTO updateAuthor(AuthorUpdateDTO authorData, Long id) {
         var author = authorRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Author Not Found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Author not found with id: " + id));
         authorMapper.update(authorData, author);
         authorRepository.save(author);
-        var authorDTO = authorMapper.map(author);
-        return authorDTO;
+        return authorMapper.map(author);
     }
 
-    public void delete(Long id) {
+    public void deleteAuthor(Long id) {
         authorRepository.deleteById(id);
     }
 }

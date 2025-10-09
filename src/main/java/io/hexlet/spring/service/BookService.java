@@ -19,38 +19,35 @@ public class BookService {
     @Autowired
     private BookMapper bookMapper;
 
-    public List<BookDTO> getAll() {
+    // BEGIN (write your solution here)
+    public List<BookDTO> getAllBooks() {
         var books = bookRepository.findAll();
-        var result = books.stream()
+        return books.stream()
                 .map(bookMapper::map)
                 .toList();
-        return result;
     }
 
-    public BookDTO create(BookCreateDTO bookData) {
+    public BookDTO createBook(BookCreateDTO bookData) {
         var book = bookMapper.map(bookData);
         bookRepository.save(book);
-        var bookDTO = bookMapper.map(book);
-        return bookDTO;
+        return bookMapper.map(book);
     }
 
-    public BookDTO findById(Long id) {
+    public BookDTO getBookById(Long id) {
         var book = bookRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Book Not Found with id: " + id));
-        var bookDTO = bookMapper.map(book);
-        return bookDTO;
+                .orElseThrow(() -> new ResourceNotFoundException("Book not found with id: " + id));
+        return bookMapper.map(book);
     }
 
-    public BookDTO update(BookUpdateDTO bookData, Long id) {
+    public BookDTO updateBook(BookUpdateDTO bookData, Long id) {
         var book = bookRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Book Not Found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Book not found with id: " + id));
         bookMapper.update(bookData, book);
         bookRepository.save(book);
-        var bookDTO = bookMapper.map(book);
-        return bookDTO;
+        return bookMapper.map(book);
     }
 
-    public void delete(Long id) {
+    public void deleteBook(Long id) {
         bookRepository.deleteById(id);
     }
 }
