@@ -29,6 +29,10 @@ public abstract class PostMapper {
     @Mapping(target = "tags", source = "tagIds", qualifiedByName = "tagIdsToTags")
     public abstract Post map(PostCreateDTO dto);
 
+    // Добавляем недостающий метод
+    @Mapping(target = "tags", source = "tagIds", qualifiedByName = "tagIdsToTags")
+    public abstract Post map(PostUpdateDTO dto);
+
     @Mapping(source = "user.id", target = "userId")
     @Mapping(target = "tags", source = "tags", qualifiedByName = "tagsToTagDTOs")
     public abstract PostDTO map(Post model);

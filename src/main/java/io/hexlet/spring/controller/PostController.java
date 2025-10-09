@@ -6,6 +6,7 @@ import io.hexlet.spring.mapper.PostMapper;
 import io.hexlet.spring.model.Post;
 import io.hexlet.spring.repository.CommentRepository;
 import io.hexlet.spring.repository.PostRepository;
+import io.hexlet.spring.service.PostService;
 import io.hexlet.spring.specification.PostSpecification;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,79 +20,90 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/posts")
+@RequestMapping("/api")
 public class PostController {
 
     @Autowired
-    private PostRepository postRepository;
+    private PostService postService;
 
     @Autowired
-    private CommentRepository commentRepository;
+    private io.hexlet.spring.mapper.PostMapper postMapper;
 
-    @Autowired
-    private PostMapper postMapper;
-
-    @Autowired
-    private PostSpecification postSpecification;
-
-    @GetMapping
+    @GetMapping("/posts")
     @ResponseStatus(HttpStatus.OK)
-    public Page<PostDTO> listPosts(PostParamsDTO params,
-                                   @RequestParam(defaultValue = "0") int page,
-                                   @RequestParam(defaultValue = "10") int size) {
-        var spec = postSpecification.build(params);
-        var pageable = PageRequest.of(page, size);
-        var posts = postRepository.findAll(spec, pageable);
-        return posts.map(postMapper::map);
+    public ResponseEntity<List<PostDTO>> index() {
+        var posts = postService.getAll();
+        var postDTOs = posts.stream()
+                .map(postMapper::map)
+                .toList();
+
+        return ResponseEntity.ok()
+                .header("X-Total-Count", String.valueOf(postDTOs.size()))
+                .body(postDTOs);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<PostDTO> getPost(@PathVariable Long id) {
-        return postRepository.findById(id)
+    @GetMapping("/posts/paged")
+    public ResponseEntity<Page<PostDTO>> getPostsPaged(PostParamsDTO params,
+                                                       @RequestParam(defaultValue = "0") int page,
+                                                       @RequestParam(defaultValue = "10") int size) {
+        var pageable = PageRequest.of(page, size);
+        Page<Post> posts = postService.getPosts(params, pageable);
+        Page<PostDTO> postDTOs = posts.map(postMapper::map);
+
+        return ResponseEntity.ok()
+                .header("X-Total-Count", String.valueOf(posts.getTotalElements()))
+                .body(postDTOs);
+    }
+
+    @GetMapping("/posts/{id}")
+    public ResponseEntity<PostDTO> show(@PathVariable Long id) {
+        return postService.findById(id)
                 .map(post -> ResponseEntity.ok(postMapper.map(post)))
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @PostMapping
-    public ResponseEntity<PostDTO> createPost(@Valid @RequestBody PostCreateDTO dto) {
-        var post = postMapper.map(dto);
-        postRepository.save(post);
-        return ResponseEntity.status(HttpStatus.CREATED).body(postMapper.map(post));
+    @PostMapping("/posts")
+    public ResponseEntity<PostDTO> create(@Valid @RequestBody PostCreateDTO dto) {
+        Post post = postMapper.map(dto);
+        Post createdPost = postService.create(post);
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(postMapper.map(createdPost));
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/posts/{id}")
     public ResponseEntity<PostDTO> update(@PathVariable Long id,
                                           @Valid @RequestBody PostUpdateDTO dto) {
-        Post post = postRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-
-        postMapper.update(dto, post);
-        postRepository.save(post);
-
-        return ResponseEntity.ok(postMapper.map(post));
+        try {
+            // Используем новый метод map для PostUpdateDTO
+            Post post = postMapper.map(dto);
+            post.setId(id);
+            Post updatedPost = postService.update(id, post);
+            return ResponseEntity.ok(postMapper.map(updatedPost));
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+        }
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/posts/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deletePost(@PathVariable Long id) {
-        Post post = postRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Post not found with id: " + id));
-
-        commentRepository.deleteByPostId(id);
-        postRepository.delete(post);
+    public void delete(@PathVariable Long id) {
+        postService.delete(id);
     }
 
-    @PatchMapping("/{id}")
-    public ResponseEntity<PostDTO> patchPost(@PathVariable Long id,
-                                             @RequestBody PostPatchDTO dto) {
-        var post = postRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+    @PatchMapping("/posts/{id}")
+    public ResponseEntity<PostDTO> patch(@PathVariable Long id,
+                                         @RequestBody PostPatchDTO dto) {
+        try {
+            Post postUpdates = new Post();
+            dto.getTitle().ifPresent(postUpdates::setTitle);
+            dto.getContent().ifPresent(postUpdates::setContent);
+            dto.getPublished().ifPresent(postUpdates::setPublished);
 
-        dto.getTitle().ifPresent(post::setTitle);
-        dto.getContent().ifPresent(post::setContent);
-        dto.getPublished().ifPresent(post::setPublished);
-
-        postRepository.save(post);
-        return ResponseEntity.ok(postMapper.map(post));
+            Post updatedPost = postService.patch(id, postUpdates);
+            return ResponseEntity.ok(postMapper.map(updatedPost));
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+        }
     }
 }
