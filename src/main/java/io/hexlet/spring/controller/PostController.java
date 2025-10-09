@@ -1,16 +1,16 @@
 package io.hexlet.spring.controller;
 
-import io.hexlet.spring.dto.post.PostCreateDTO;
-import io.hexlet.spring.dto.post.PostDTO;
-import io.hexlet.spring.dto.post.PostPatchDTO;
-import io.hexlet.spring.dto.post.PostUpdateDTO;
+import io.hexlet.spring.dto.post.*;
 import io.hexlet.spring.exception.ResourceNotFoundException;
 import io.hexlet.spring.mapper.PostMapper;
 import io.hexlet.spring.model.Post;
 import io.hexlet.spring.repository.CommentRepository;
 import io.hexlet.spring.repository.PostRepository;
+import io.hexlet.spring.specification.PostSpecification;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -31,12 +31,18 @@ public class PostController {
     @Autowired
     private PostMapper postMapper;
 
+    @Autowired
+    private PostSpecification postSpecification;
+
     @GetMapping
-    public List<PostDTO> listPosts() {
-        return postRepository.findAll()
-                .stream()
-                .map(postMapper::map)
-                .toList();
+    @ResponseStatus(HttpStatus.OK)
+    public Page<PostDTO> listPosts(PostParamsDTO params,
+                                   @RequestParam(defaultValue = "0") int page,
+                                   @RequestParam(defaultValue = "10") int size) {
+        var spec = postSpecification.build(params);
+        var pageable = PageRequest.of(page, size);
+        var posts = postRepository.findAll(spec, pageable);
+        return posts.map(postMapper::map);
     }
 
     @GetMapping("/{id}")
